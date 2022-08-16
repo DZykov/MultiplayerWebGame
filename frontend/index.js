@@ -1,9 +1,12 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
+const worldWidth = 2000;
+const worldHeight = 2000;
+const border_margin = 10;
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = worldWidth;
+canvas.height = worldHeight;
 
 class Player {
     constructor(x, y, radius, colour, speed) {
@@ -12,6 +15,7 @@ class Player {
         this.radius = radius;
         this.colour = colour;
         this.speed = speed;
+        this.dir = ''
     }
 
     draw() {
@@ -19,6 +23,22 @@ class Player {
         ctx.arc(this.x , this.y, this.radius, 0, Math.PI * 2, false);
         ctx.fillStyle = this.colour;
         ctx.fill();
+    }
+
+    update() {
+        this.draw();
+        if(this.dir == 'a'){
+            player.x = player.x - player.speed;
+        }
+        if(this.dir== 'd'){
+            player.x = player.x + player.speed;
+        }
+        if(this.dir == 'w'){
+            player.y = player.y - player.speed
+        }
+        if(this.dir == 's'){
+            player.y = player.y + player.speed
+        }
     }
 }
 
@@ -32,6 +52,7 @@ class Projectile {
         this.start_x = x;
         this.start_y = y;
         this.dist = 0;
+        this.max_dist = 600;
     }
 
     draw() {
@@ -55,28 +76,77 @@ const player = new Player(x_mid, y_mid, 30, 'blue', 3);
 
 const projectiles = [];
 
+function camera_scroll(dir){
+    if(dir == ''){
+        return 1;
+    }
+    if(dir == 'a'){
+        window.scrollBy(-player.speed,0);
+    }
+    if(dir== 'd'){
+        window.scrollBy(player.speed,0);
+    }
+    if(dir == 'w'){
+        window.scrollBy(0, -player.speed);
+    }
+    if(dir == 's'){
+        window.scrollBy(0, player.speed);
+    }
+    scrolldelay = setTimeout(camera_scroll,10);
+}
+
+function check_boarder(){
+    // right
+    if(player.x - player.radius - border_margin <= 0 && player.dir == 'a'){
+        player.dir = '';
+        return 1;
+    }
+    // left
+    if(player.x + player.radius + border_margin >= worldWidth && player.dir == 'd'){
+        player.dir = '';
+        return 1;
+    }
+    // top
+    if(player.y - player.radius - border_margin <= 0 && player.dir == 'w'){
+        player.dir = '';
+        return 1;
+    }
+    // bottom
+    if(player.y + player.radius + border_margin >= worldHeight && player.dir == 's'){
+        player.dir = '';
+        return 1;
+    }
+    return 0;
+}
+
 function animate() {
     requestAnimationFrame(animate)
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    player.draw();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var check = check_boarder();
+    player.update();
+    camera_scroll(player.dir);
     projectiles.forEach(projectile =>{
         projectile.update();
-    })
-    console.log(projectiles.length)
+        if(projectile.dist >= projectile.max_dist){
+            const index = projectiles.indexOf(projectile);
+            projectiles.splice(index, 1);
+        }
+    });
 }
 
 // window???
-window.addEventListener('click', (event) => {
-    const angle = Math.atan2(event.clientY - player.y, 
-                            event.clientX - player.x);
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const angle = Math.atan2(y - player.y, x- player.x);
     const velocity = {
         x: Math.cos(angle),
         y: Math.sin(angle),
     }
-    var dir_x = 0
     projectiles.push(new Projectile(
-        player.x,
-        player.y,
+        player.x + velocity.x*player.radius + velocity.x*5,
+        player.y + velocity.y*player.radius + velocity.y*5,
         5, 
         'red', 
         velocity,
@@ -84,19 +154,56 @@ window.addEventListener('click', (event) => {
 })
 
 window.addEventListener('keydown', (event) => {
-    //console.log(event.key);
     if(event.key.toLowerCase() == 'a'){
-        player.x = player.x - player.speed;
+        player.dir = 'a';
     }
     if(event.key.toLowerCase() == 'd'){
-        player.x = player.x + player.speed;
+        player.dir = 'd';
     }
     if(event.key.toLowerCase() == 'w'){
-        player.y = player.y - player.speed
+        player.dir = 'w';
     }
     if(event.key.toLowerCase() == 's'){
-        player.y = player.y + player.speed
+        player.dir = 's';
+    }
+    if(event.key.toLowerCase() == 'v'){
+        player.dir = '';
     }
 })
 
+function scroll_to_center(){
+    window.scrollTo({
+        top: player.y / 2,
+        left: player.x / 2,
+        behavior: "smooth"
+    });
+}
+
+let isDown = false;
+let startX;
+let startY;
+let scrollLeft;
+
+window.addEventListener("mousedown", e => {
+    if(e.button == 1){
+        isDown = true;
+        startX = player.x;
+        startY = player.y;
+    }
+});
+window.addEventListener("mouseleave", () => {
+    isDown = false;
+});
+window.addEventListener("mouseup", () => {
+    isDown = false;
+});
+window.addEventListener("mousemove", e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const walkX = -e.clientX + startX;
+    const walkY = -e.clientY + startY;
+    window.scrollTo(walkX, walkY);
+});
+
+scroll_to_center()
 animate();
