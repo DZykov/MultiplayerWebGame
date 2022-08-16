@@ -6,12 +6,12 @@ canvas.width = innerWidth;
 canvas.height = innerHeight;
 
 class Player {
-    constructor(x, y, radius, colour, velocity) {
+    constructor(x, y, radius, colour, speed) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.colour = colour;
-        this.velocity = velocity;
+        this.speed = speed;
     }
 
     draw() {
@@ -29,6 +29,9 @@ class Projectile {
         this.radius = radius;
         this.colour = colour;
         this.velocity = velocity;
+        this.start_x = x;
+        this.start_y = y;
+        this.dist = 0;
     }
 
     draw() {
@@ -42,12 +45,13 @@ class Projectile {
         this.draw();
         this.x = this.x + this.velocity.x;
         this.y = this.y + this.velocity.y;
+        this.dist = Math.sqrt( (this.x - this.start_x)**2 + (this.y - this.start_y)**2 );
     }
 }
 
 const x_mid = canvas.width / 2;
 const y_mid = canvas.height / 2;
-const player = new Player(x_mid, y_mid, 30, 'blue', 10);
+const player = new Player(x_mid, y_mid, 30, 'blue', 3);
 
 const projectiles = [];
 
@@ -58,6 +62,7 @@ function animate() {
     projectiles.forEach(projectile =>{
         projectile.update();
     })
+    console.log(projectiles.length)
 }
 
 // window???
@@ -78,5 +83,20 @@ window.addEventListener('click', (event) => {
     ));
 })
 
+window.addEventListener('keydown', (event) => {
+    //console.log(event.key);
+    if(event.key.toLowerCase() == 'a'){
+        player.x = player.x - player.speed;
+    }
+    if(event.key.toLowerCase() == 'd'){
+        player.x = player.x + player.speed;
+    }
+    if(event.key.toLowerCase() == 'w'){
+        player.y = player.y - player.speed
+    }
+    if(event.key.toLowerCase() == 's'){
+        player.y = player.y + player.speed
+    }
+})
 
-animate()
+animate();
