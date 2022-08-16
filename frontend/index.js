@@ -1,3 +1,4 @@
+// client
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
@@ -70,13 +71,15 @@ class Projectile {
     }
 }
 
+// client
 const x_mid = canvas.width / 2;
 const y_mid = canvas.height / 2;
 const player = new Player(x_mid, y_mid, 30, 'blue', 3);
 
 const projectiles = [];
 
-function camera_scroll(dir){
+// client
+function camera_auto_scroll(dir){
     if(dir == ''){
         return 1;
     }
@@ -95,6 +98,7 @@ function camera_scroll(dir){
     scrolldelay = setTimeout(camera_scroll,10);
 }
 
+// server + client
 function check_boarder(){
     // right
     if(player.x - player.radius - border_margin <= 0 && player.dir == 'a'){
@@ -119,12 +123,13 @@ function check_boarder(){
     return 0;
 }
 
+// server + client
 function animate() {
     requestAnimationFrame(animate)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
     player.update();
-    camera_scroll(player.dir);
+    //camera_auto_scroll(player.dir);
     projectiles.forEach(projectile =>{
         projectile.update();
         if(projectile.dist >= projectile.max_dist){
@@ -134,7 +139,7 @@ function animate() {
     });
 }
 
-// window???
+// window??? server + client
 canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -153,6 +158,7 @@ canvas.addEventListener('click', (event) => {
     ));
 })
 
+// server + client
 window.addEventListener('keydown', (event) => {
     if(event.key.toLowerCase() == 'a'){
         player.dir = 'a';
@@ -171,6 +177,7 @@ window.addEventListener('keydown', (event) => {
     }
 })
 
+// client
 function scroll_to_center(){
     window.scrollTo({
         top: player.y / 2,
@@ -178,6 +185,8 @@ function scroll_to_center(){
         behavior: "smooth"
     });
 }
+
+// client
 
 let isDown = false;
 let startX;
@@ -202,7 +211,11 @@ window.addEventListener("mousemove", e => {
     e.preventDefault();
     const walkX = -e.clientX + startX;
     const walkY = -e.clientY + startY;
-    window.scrollTo(walkX, walkY);
+    window.scrollTo({
+        top: walkY,
+        left: walkX,
+        behavior: "smooth"
+    });
 });
 
 scroll_to_center()
