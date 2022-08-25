@@ -1,14 +1,3 @@
-// client
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
-
-const worldWidth = 2000;
-const worldHeight = 2000;
-const border_margin = 10;
-
-canvas.width = worldWidth;
-canvas.height = worldHeight;
-
 class Player {
     constructor(x, y, radius, colour, speed) {
         this.x = x;
@@ -71,34 +60,54 @@ class Projectile {
     }
 }
 
-// client
-const x_mid = canvas.width / 2;
-const y_mid = canvas.height / 2;
-const player = new Player(x_mid, y_mid, 30, 'blue', 3);
-
+// consts
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
+const worldWidth = 2000;
+const worldHeight = 2000;
+const border_margin = 10;
+canvas.width = worldWidth;
+canvas.height = worldHeight;
+const socket = io('http://localhost:3000');
+const player_r = 30;
+const x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 + 1) + player_r*3);
+const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 + 1) + player_r*3);
+const player = new Player(x_mid, y_mid, player_r, 'blue', 3);
+const max_bullets = 5;
 const projectiles = [];
+var players = [];
 
-// client
-function camera_auto_scroll(dir){
-    if(dir == ''){
-        return 1;
-    }
-    if(dir == 'a'){
-        window.scrollBy(-player.speed,0);
-    }
-    if(dir== 'd'){
-        window.scrollBy(player.speed,0);
-    }
-    if(dir == 'w'){
-        window.scrollBy(0, -player.speed);
-    }
-    if(dir == 's'){
-        window.scrollBy(0, player.speed);
-    }
-    scrolldelay = setTimeout(camera_scroll,10);
+// send player to the server
+socket.emit('get_player', player);
+
+// main loop
+function animate() {
+    requestAnimationFrame(animate)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var check = check_boarder();
+    player.update();
+    //camera_auto_scroll(player.dir);
+    projectiles.forEach(projectile =>{
+        projectile.update();
+        if(projectile.dist >= projectile.max_dist){
+            const index = projectiles.indexOf(projectile);
+            projectiles.splice(index, 1);
+        }
+    });
 }
 
-// server + client
+// helpers
+
+// 1. locate player in the center
+function scroll_to_center(){
+    window.scrollTo({
+        top: player.y / 2,
+        left: player.x / 2,
+        behavior: "smooth"
+    });
+}
+
+// 2. check boarders
 function check_boarder(){
     // right
     if(player.x - player.radius - border_margin <= 0 && player.dir == 'a'){
@@ -123,23 +132,8 @@ function check_boarder(){
     return 0;
 }
 
-// server + client
-function animate() {
-    requestAnimationFrame(animate)
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var check = check_boarder();
-    player.update();
-    //camera_auto_scroll(player.dir);
-    projectiles.forEach(projectile =>{
-        projectile.update();
-        if(projectile.dist >= projectile.max_dist){
-            const index = projectiles.indexOf(projectile);
-            projectiles.splice(index, 1);
-        }
-    });
-}
-
-// window??? server + client
+// controlls
+// 1. attack on right click
 canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -149,16 +143,18 @@ canvas.addEventListener('click', (event) => {
         x: Math.cos(angle),
         y: Math.sin(angle),
     }
-    projectiles.push(new Projectile(
-        player.x + velocity.x*player.radius + velocity.x*5,
-        player.y + velocity.y*player.radius + velocity.y*5,
-        5, 
-        'red', 
-        velocity,
-    ));
+    if(projectiles.length <= max_bullets){
+        projectiles.push(new Projectile(
+            player.x + velocity.x*player.radius + velocity.x*5,
+            player.y + velocity.y*player.radius + velocity.y*5,
+            5, 
+            'red', 
+            velocity,
+        ));
+    }
 })
 
-// server + client
+// 2. movements
 window.addEventListener('keydown', (event) => {
     if(event.key.toLowerCase() == 'a'){
         player.dir = 'a';
@@ -172,27 +168,16 @@ window.addEventListener('keydown', (event) => {
     if(event.key.toLowerCase() == 's'){
         player.dir = 's';
     }
-    if(event.key.toLowerCase() == 'v'){
+    if(event.key.toLowerCase() == 'v'){ // stop
         player.dir = '';
     }
 })
 
-// client
-function scroll_to_center(){
-    window.scrollTo({
-        top: player.y / 2,
-        left: player.x / 2,
-        behavior: "smooth"
-    });
-}
-
-// client
-
+// 3. middle mouse to scroll canvas relatively to player
 let isDown = false;
 let startX;
 let startY;
 let scrollLeft;
-
 window.addEventListener("mousedown", e => {
     if(e.button == 1){
         isDown = true;
@@ -218,5 +203,18 @@ window.addEventListener("mousemove", e => {
     });
 });
 
+// socket functions
+socket.on('init', handleInit);
+function handleInit(msg){
+    console.log(msg);
+}
+
+socket.on('receive_players', receive_players);
+function receive_players(data){
+    players = data;
+    console.log(players);
+}
+
+// start game
 scroll_to_center()
 animate();
