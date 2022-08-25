@@ -15,6 +15,17 @@ const io = new Server(server, {
     }
 });
 
+// consts for environment
+const envy = {
+    worldWidth: 2000,
+    worldHeight: 2000,
+    border_margin: 10,
+    player_r: 30,
+    player_s: 3,
+    max_bullets: 5,
+    max_dist: 600
+} 
+
 // consts for managing players
 var players = {};
 
@@ -24,7 +35,13 @@ var players = {};
 io.on('connection', (socket) => {
     console.log(socket.id);
     console.log(socket.data);
-    socket.emit('init', {data: 'hello!'});
+    socket.emit('init', {data: 'hello!'}); // change!
+
+    // get envy
+    socket.on('get_envy', () => {
+        socket.emit('receive_envy', envy);
+        //console.log(envy);
+    });
 
     // send players
     socket.on('get_player', (player) => {
@@ -39,13 +56,11 @@ io.on('connection', (socket) => {
 
     // disconnect
     socket.on('disconnect', (player) => {
-        //const index = players.indexOf(socket.id);
         delete players[socket.id];
         console.log(players);
         for(var key in players){
             io.to(key).emit('receive_players', uniq_players(key));
         }
-        //socket.emit('receive_players', players);
     });
 });
 

@@ -33,7 +33,7 @@ class Player {
 }
 
 class Projectile {
-    constructor(x, y, radius, colour, velocity) {
+    constructor(x, y, radius, colour, velocity, max_dist) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -42,7 +42,7 @@ class Projectile {
         this.start_x = x;
         this.start_y = y;
         this.dist = 0;
-        this.max_dist = 600;
+        this.max_dist = max_dist;  // get from server
     }
 
     draw() {
@@ -61,19 +61,26 @@ class Projectile {
 }
 
 // consts
+const socket = io('http://localhost:3000');
+socket.emit('get_envy', ); // ?
+
+var envy = {};
+
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
-const worldWidth = 2000;
-const worldHeight = 2000;
-const border_margin = 10;
+
+const worldWidth = 800;  // get from server
+const worldHeight = 800;  // get from server
+const border_margin = 10;  // get from server
 canvas.width = worldWidth;
 canvas.height = worldHeight;
-const socket = io('http://localhost:3000');
-const player_r = 30;
+const player_r = 30;  // get from server
+const player_s = 3;  // get from server
 const x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 + 1) + player_r*3);
 const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 + 1) + player_r*3);
-const player = new Player(x_mid, y_mid, player_r, 'blue', 3);
-const max_bullets = 5;
+const player = new Player(x_mid, y_mid, player_r, 'blue', player_s);
+const max_bullets = 5; // get from server
+const max_dist = 600; // get from server
 const projectiles = [];
 var players = [];
 
@@ -85,6 +92,11 @@ function animate() {
     requestAnimationFrame(animate)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
+    socket.emit('get_player', player);
+    for(enemy in players){
+        p = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed);
+        p.update();
+    }
     player.update();
     //camera_auto_scroll(player.dir);
     projectiles.forEach(projectile =>{
@@ -150,6 +162,7 @@ canvas.addEventListener('click', (event) => {
             5, 
             'red', 
             velocity,
+            max_dist,
         ));
     }
 })
@@ -212,7 +225,13 @@ function handleInit(msg){
 socket.on('receive_players', receive_players);
 function receive_players(data){
     players = data;
-    console.log(players);
+    //console.log(players);
+}
+
+socket.on('receive_envy', receive_envy);
+function receive_envy(data){
+    envy = data;
+    //console.log(envy)
 }
 
 // start game
