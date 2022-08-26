@@ -65,6 +65,19 @@ io.on('connection', (socket) => {
         
     });
 
+    // delete projectiles
+    socket.on('get_projectiles', () => {
+        delete projectiles[socket.id];
+        socket.emit('receive_projectiles', uniq_players(socket.id));
+
+        for(var key in players){
+            if(socket.id != key){
+                io.to(key).emit('receive_projectiles', uniq_players(key));
+            }
+        }
+        
+    });
+
     // disconnect
     socket.on('disconnect', (player) => {
         delete players[socket.id];

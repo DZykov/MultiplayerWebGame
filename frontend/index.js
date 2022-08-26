@@ -102,7 +102,6 @@ function animate() {
     //camera_auto_scroll(player.dir);
     enemy_projectiles.forEach(p =>{
         p.update();
-        console.log(p)
         if(p.dist >= p.max_dist){
             const index = enemy_projectiles.indexOf(p);
             enemy_projectiles.splice(index, 1);
@@ -110,7 +109,6 @@ function animate() {
     });
     projectiles.forEach(projectile =>{
         projectile.update();
-        console.log(projectile)
         if(projectile.dist >= projectile.max_dist){
             const index = projectiles.indexOf(projectile);
             projectiles.splice(index, 1);
@@ -246,7 +244,6 @@ function receive_projectiles(data){
     }
     p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);
     enemy_projectiles.push(p);
-    console.log(data[1])
 }
 
 socket.on('receive_envy', receive_envy);
