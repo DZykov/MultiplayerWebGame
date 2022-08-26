@@ -279,7 +279,6 @@ function animate() {
     if(player.health <= 0){
         console.log('Died!');
         socket.disconnect();
-        alert("You died!");
         return;
     }
 }
