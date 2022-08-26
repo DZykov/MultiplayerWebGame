@@ -81,6 +81,8 @@ const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 + 1) + play
 const player = new Player(x_mid, y_mid, player_r, 'blue', player_s);
 const max_bullets = 5; // get from server
 const max_dist = 600; // get from server
+const proj_r = 5; // get from server
+const proj_s = 5; // get from server
 const projectiles = [];
 var players = [];
 const enemy_projectiles = []
@@ -90,7 +92,7 @@ socket.emit('get_player', player);
 
 // main loop
 function animate() {
-    requestAnimationFrame(animate)
+    requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
     socket.emit('get_player', player);
@@ -100,13 +102,15 @@ function animate() {
     }
     player.update();
     //camera_auto_scroll(player.dir);
-    enemy_projectiles.forEach(p =>{
-        p.update();
-        if(p.dist >= p.max_dist){
-            const index = enemy_projectiles.indexOf(p);
-            enemy_projectiles.splice(index, 1);
-        }
-    });
+    if(enemy_projectiles.length > 0){
+        enemy_projectiles.forEach(p =>{
+            p.update();
+            if(p.dist >= p.max_dist){
+                const index = enemy_projectiles.indexOf(p);
+                enemy_projectiles.splice(index, 1);
+            }
+        });
+    }
     projectiles.forEach(projectile =>{
         projectile.update();
         if(projectile.dist >= projectile.max_dist){
@@ -164,10 +168,10 @@ canvas.addEventListener('click', (event) => {
         y: Math.sin(angle),
     }
     if(projectiles.length <= max_bullets){
-        p = new Projectile(
-            player.x + velocity.x*player.radius + velocity.x*5,
-            player.y + velocity.y*player.radius + velocity.y*5,
-            5, 
+        const p = new Projectile(
+            player.x + velocity.x*player.radius + velocity.x*proj_s,
+            player.y + velocity.y*player.radius + velocity.y*proj_s,
+            proj_r, 
             'red', 
             velocity,
             max_dist,
@@ -240,6 +244,9 @@ function receive_players(data){
 socket.on('receive_projectiles', receive_projectiles);
 function receive_projectiles(data){
     if(data[1] == null){
+        return
+    }
+    if (typeof data[1].x == 'undefined'){
         return
     }
     p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);

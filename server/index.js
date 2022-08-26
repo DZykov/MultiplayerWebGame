@@ -23,7 +23,9 @@ const envy = {
     player_r: 30,
     player_s: 3,
     max_bullets: 5,
-    max_dist: 600
+    max_dist: 600,
+    proj_r: 5,
+    proj_s: 5
 } 
 
 // consts for managing players and projectiles
