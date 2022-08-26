@@ -100,8 +100,29 @@ function animate() {
     var check = check_boarder();
     socket.emit('get_player', player);
     for(enemy in players){
-        p = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].player_health);
-        p.update();
+        pl = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].player_health);
+        pl.update();
+        // enemy proj
+        if(enemy_projectiles.length > 0){
+            enemy_projectiles.forEach(p =>{
+                const dist = Math.hypot(pl.x - p.x, pl.y - p.y);
+                if(dist - p.radius - pl.radius < 1){
+                    setTimeout(() => {
+                        const index = enemy_projectiles.indexOf(p);
+                        enemy_projectiles.splice(index, 1);
+                    }, 0)
+                }
+            });
+        }
+        projectiles.forEach(projectile =>{
+            const dist = Math.hypot(pl.x - projectile.x, pl.y - projectile.y);
+                if(dist - projectile.radius - pl.radius < 1){
+                    setTimeout(() => {
+                        const index = projectiles.indexOf(projectile);
+                        projectiles.splice(index, 1);
+                    }, 0)
+                }
+        });
     }
     player.update();
     //camera_auto_scroll(player.dir); //?
@@ -125,6 +146,8 @@ function animate() {
             }
             if(player.health <= 0){
                 console.log('Died!');
+                socket.disconnect();
+                return;
             }
         });
     }
@@ -147,6 +170,8 @@ function animate() {
             }
             if(player.health <= 0){
                 console.log('Died!');
+                socket.disconnect();
+                return;
             }
     });
 }
@@ -275,10 +300,10 @@ function receive_players(data){
 socket.on('receive_projectiles', receive_projectiles);
 function receive_projectiles(data){
     if(data[1] == null){
-        return
+        return;
     }
     if (typeof data[1].x == 'undefined'){
-        return
+        return;
     }
     p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);
     enemy_projectiles.push(p);
