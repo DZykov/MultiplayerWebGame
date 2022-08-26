@@ -83,6 +83,7 @@ const max_bullets = 5; // get from server
 const max_dist = 600; // get from server
 const projectiles = [];
 var players = [];
+const enemy_projectiles = []
 
 // send player to the server
 socket.emit('get_player', player);
@@ -99,8 +100,17 @@ function animate() {
     }
     player.update();
     //camera_auto_scroll(player.dir);
+    enemy_projectiles.forEach(p =>{
+        p.update();
+        console.log(p)
+        if(p.dist >= p.max_dist){
+            const index = enemy_projectiles.indexOf(p);
+            enemy_projectiles.splice(index, 1);
+        }
+    });
     projectiles.forEach(projectile =>{
         projectile.update();
+        console.log(projectile)
         if(projectile.dist >= projectile.max_dist){
             const index = projectiles.indexOf(projectile);
             projectiles.splice(index, 1);
@@ -156,14 +166,16 @@ canvas.addEventListener('click', (event) => {
         y: Math.sin(angle),
     }
     if(projectiles.length <= max_bullets){
-        projectiles.push(new Projectile(
+        p = new Projectile(
             player.x + velocity.x*player.radius + velocity.x*5,
             player.y + velocity.y*player.radius + velocity.y*5,
             5, 
             'red', 
             velocity,
             max_dist,
-        ));
+        );
+        socket.emit('get_projectiles', p);
+        projectiles.push(p);
     }
 })
 
@@ -224,14 +236,22 @@ function handleInit(msg){
 
 socket.on('receive_players', receive_players);
 function receive_players(data){
-    players = data;
-    //console.log(players);
+    players = data[0];
+}
+
+socket.on('receive_projectiles', receive_projectiles);
+function receive_projectiles(data){
+    if(data[1] == null){
+        return
+    }
+    p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);
+    enemy_projectiles.push(p);
+    console.log(data[1])
 }
 
 socket.on('receive_envy', receive_envy);
 function receive_envy(data){
     envy = data;
-    //console.log(envy)
 }
 
 // start game

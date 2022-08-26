@@ -26,21 +26,19 @@ const envy = {
     max_dist: 600
 } 
 
-// consts for managing players
+// consts for managing players and projectiles
 var players = {};
+var projectiles = {};
 
 
 // server functions
 // 1. connect
 io.on('connection', (socket) => {
-    console.log(socket.id);
-    console.log(socket.data);
     socket.emit('init', {data: 'hello!'}); // change!
 
     // get envy
     socket.on('get_envy', () => {
         socket.emit('receive_envy', envy);
-        //console.log(envy);
     });
 
     // send players
@@ -54,10 +52,22 @@ io.on('connection', (socket) => {
         }
     });
 
+    // send projectiles
+    socket.on('get_projectiles', (projectile) => {
+        projectiles[socket.id] = projectile;
+        socket.emit('receive_projectiles', uniq_players(socket.id));
+
+        for(var key in players){
+            if(socket.id != key){
+                io.to(key).emit('receive_projectiles', uniq_players(key));
+            }
+        }
+        
+    });
+
     // disconnect
     socket.on('disconnect', (player) => {
         delete players[socket.id];
-        console.log(players);
         for(var key in players){
             io.to(key).emit('receive_players', uniq_players(key));
         }
@@ -71,10 +81,12 @@ server.listen(3000, () => {
 // helpers
 function uniq_players(id){
     var n_players = {}
+    var n_projectiles = []
     for(player in players){
         if(player != id){
             n_players[player] = players[player];
+            n_projectiles = projectiles[player];
         }
     }
-    return n_players;
+    return [n_players, n_projectiles];
 }
