@@ -144,11 +144,6 @@ function animate() {
                 player.health = player.health - 1;
                 console.log(player.health);
             }
-            if(player.health <= 0){
-                console.log('Died!');
-                socket.disconnect();
-                return;
-            }
         });
     }
     projectiles.forEach(projectile =>{
@@ -168,12 +163,13 @@ function animate() {
                 player.health = player.health - 1;
                 console.log(player.health);
             }
-            if(player.health <= 0){
-                console.log('Died!');
-                socket.disconnect();
-                return;
-            }
     });
+    if(player.health <= 0){
+        console.log('Died!');
+        socket.disconnect();
+        alert("You died!");
+        return;
+    }
 }
 
 // helpers
