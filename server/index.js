@@ -34,7 +34,6 @@ var projectiles = {};
 
 
 // server functions
-// 1. connect
 io.on('connection', (socket) => {
     socket.emit('init', {data: 'hello!'}); // change!
 
