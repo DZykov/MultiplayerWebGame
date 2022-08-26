@@ -1,7 +1,8 @@
 class Player {
-    constructor(x, y, radius, colour, speed) {
+    constructor(x, y, radius, colour, speed, player_health) {
         this.x = x;
         this.y = y;
+        this.health = player_health;
         this.radius = radius;
         this.colour = colour;
         this.speed = speed;
@@ -63,8 +64,7 @@ class Projectile {
 // consts
 const socket = io('http://localhost:3000');
 socket.emit('get_envy', ); // ?
-
-var envy = {};
+var envy = {}; // ?
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -76,13 +76,16 @@ canvas.width = worldWidth;
 canvas.height = worldHeight;
 const player_r = 30;  // get from server
 const player_s = 3;  // get from server
+const player_health = 10;  // get from server
 const x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 - border_margin + 1) + player_r*3);
 const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 - border_margin + 1) + player_r*3);
-const player = new Player(x_mid, y_mid, player_r, 'blue', player_s);
+const player_colour = 'blue'; // input
+const player = new Player(x_mid, y_mid, player_r, player_colour, player_s, player_health);
 const max_bullets = 5; // get from server
 const max_dist = 600; // get from server
 const proj_r = 5; // get from server
 const proj_s = 5; // get from server
+const proj_colour = 'red';
 const projectiles = [];
 var players = [];
 const enemy_projectiles = []
@@ -97,26 +100,54 @@ function animate() {
     var check = check_boarder();
     socket.emit('get_player', player);
     for(enemy in players){
-        p = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed);
+        p = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].player_health);
         p.update();
     }
     player.update();
-    //camera_auto_scroll(player.dir);
+    //camera_auto_scroll(player.dir); //?
     if(enemy_projectiles.length > 0){
         enemy_projectiles.forEach(p =>{
             p.update();
             if(p.dist >= p.max_dist){
-                const index = enemy_projectiles.indexOf(p);
-                enemy_projectiles.splice(index, 1);
+                setTimeout(() => {
+                    const index = enemy_projectiles.indexOf(p);
+                    enemy_projectiles.splice(index, 1);
+                }, 0)
+            }
+            const dist = Math.hypot(player.x - p.x, player.y - p.y);
+            if(dist - p.radius - player.radius < 1){
+                setTimeout(() => {
+                    const index = enemy_projectiles.indexOf(p);
+                    enemy_projectiles.splice(index, 1);
+                }, 0)
+                player.health = player.health - 1;
+                console.log(player.health);
+            }
+            if(player.health <= 0){
+                console.log('Died!');
             }
         });
     }
     projectiles.forEach(projectile =>{
         projectile.update();
         if(projectile.dist >= projectile.max_dist){
-            const index = projectiles.indexOf(projectile);
-            projectiles.splice(index, 1);
+            setTimeout(() => {
+                const index = projectiles.indexOf(projectile);
+                projectiles.splice(index, 1);
+            }, 0)
         }
+        const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
+            if(dist - projectile.radius - player.radius < 1){
+                setTimeout(() => {
+                    const index = projectiles.indexOf(projectile);
+                    projectiles.splice(index, 1);
+                }, 0)
+                player.health = player.health - 1;
+                console.log(player.health);
+            }
+            if(player.health <= 0){
+                console.log('Died!');
+            }
     });
 }
 
@@ -169,10 +200,10 @@ canvas.addEventListener('click', (event) => {
     }
     if(projectiles.length <= max_bullets){
         const p = new Projectile(
-            player.x + velocity.x*player.radius + velocity.x*proj_s,
-            player.y + velocity.y*player.radius + velocity.y*proj_s,
+            player.x + velocity.x*(player.radius+2) + velocity.x*proj_s,
+            player.y + velocity.y*(player.radius+2) + velocity.y*proj_s,
             proj_r, 
-            'red', 
+            proj_colour, 
             velocity,
             max_dist,
         );

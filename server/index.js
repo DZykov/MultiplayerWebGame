@@ -22,6 +22,7 @@ const envy = {
     border_margin: 10,
     player_r: 30,
     player_s: 3,
+    player_health: 10,
     max_bullets: 5,
     max_dist: 600,
     proj_r: 5,
@@ -35,7 +36,7 @@ var projectiles = {};
 
 // server functions
 io.on('connection', (socket) => {
-    socket.emit('init', {data: 'hello!'}); // change!
+    socket.emit('init', {data: 'Connected!'}); // change!
 
     // get envy
     socket.on('get_envy', () => {
@@ -79,6 +80,16 @@ io.on('connection', (socket) => {
         
     });
 
+    // send collision
+    socket.on('send_collision', (projectile) => {
+        delete projectiles[socket.id];
+        //socket.emit('delete_projectiles', projectile);
+
+        for(var key in players){
+            io.to(key).emit('delete_projectiles', projectile);
+        }
+    });
+
     // disconnect
     socket.on('disconnect', (player) => {
         delete players[socket.id];
@@ -89,7 +100,7 @@ io.on('connection', (socket) => {
 });
 
 server.listen(3000, () => {
-    console.log('Server running!');
+    console.log('Server is running!');
 });
 
 // helpers
