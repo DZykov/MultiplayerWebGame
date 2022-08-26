@@ -4,6 +4,7 @@ const app = express();
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const clientRooms = {};
 
 // init server
 app.use(cors());
@@ -37,6 +38,14 @@ var projectiles = {};
 // server functions
 io.on('connection', (socket) => {
     socket.emit('init', {data: 'Connected!'}); // change!
+
+    socket.on('newGame', handleNewGame);
+
+    function handleNewGame(){
+        let room = makeID(6);
+        clientRooms[socket.id] = room;
+        socket.emit('gameCode', room);
+    }
 
     // get envy
     socket.on('get_envy', () => {

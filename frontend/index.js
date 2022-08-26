@@ -127,8 +127,9 @@ const particles = [];
 socket.emit('get_player', player);
 
 // main loop
+let animationId;
 function animate() {
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.125)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
@@ -275,6 +276,7 @@ function animate() {
     // player death
     if(player.health <= 0){
         console.log('Died!');
+        cancelAnimationFrame(animationId);
         socket.disconnect();
         return;
     }

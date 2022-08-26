@@ -4,15 +4,50 @@
         body {
             margin: 0;
         }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            /* display: none; <- Crashes Chrome on hover */
+            -webkit-appearance: none;
+            margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+        }
+        input[type=number] {
+            -moz-appearance:textfield; /* Firefox */
+        }
     </style>
     <head>
         <link rel="shortcut icon" href="#">
     </head>
     <body>
+        <div class="fixed">
+            <div class="bg-white">
+                <p>Room id</p>
+                <input type="number" id="room_id" name="room_id">
+                
+                <p>Player colour</p>
+                <select name="input_p_colour" id="input_p_colour">
+                    <option value="blue">Blue</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="white">White</option>
+                    <option value="purple">Purple</option>
+                </select>
+                
+                <p>Buller colour</p>
+                <select name="input_b_colour" id="input_b_colour">
+                    <option value="blue">Blue</option>
+                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="white">White</option>
+                    <option value="purple">Purple</option>
+                </select>
+                <br></br>
+                <div>
+                    <button>Start game</button>
+                </div>
+            </div>
+        </div>>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
-        <canvas>
-            
-        </canvas>
+        <canvas></canvas>
         <script src="./index.js"></script>
     </body>
 </html>
