@@ -261,13 +261,10 @@ function animate() {
                     projectiles.splice(index, 1);
                 }, 0)
                 // player health management
-                player.health = player.health - 1;
-                const decrease = player.radius / (player.health+3);
-                if(player.radius - decrease > 0){
-                    player.radius = player.radius - decrease;
-                }
+                take_damage(player);
             }
     });
+    // check projectiles
     particles.forEach((particle, index) => {
         if(particle.alpha <= 0){
             particles.splice(index, 1);
