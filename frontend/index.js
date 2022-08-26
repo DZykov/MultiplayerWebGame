@@ -61,6 +61,37 @@ class Projectile {
     }
 }
 
+class Particle {
+    constructor(x, y, radius, colour, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.colour = colour;
+        this.velocity = velocity;
+        this.alpha = 1;
+        this.friction = 0.99;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.aplha;
+        ctx.beginPath();
+        ctx.arc(this.x , this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.colour;
+        ctx.fill();
+        ctx.restore();
+    }
+
+    update(){
+        this.draw();
+        this.velocity.x *= this.friction;
+        this.velocity.y *= this.friction;
+        this.x = this.x + this.velocity.x;
+        this.y = this.y + this.velocity.y;
+        this.alpha = this.alpha - 0.02;
+    }
+}
+
 // consts
 const socket = io('http://localhost:3000');
 socket.emit('get_envy', ); // ?
@@ -81,14 +112,16 @@ const x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 - border_mar
 const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 - border_margin + 1) + player_r*3);
 const player_colour = 'blue'; // input
 const player = new Player(x_mid, y_mid, player_r, player_colour, player_s, player_health);
-const max_bullets = 5; // get from server
+const max_bullets = 15; // get from server
 const max_dist = 600; // get from server
 const proj_r = 5; // get from server
 const proj_s = 5; // get from server
+const proj_speed = 3; // get from server
 const proj_colour = 'red';
 const projectiles = [];
 var players = [];
-const enemy_projectiles = []
+const enemy_projectiles = [];
+const particles = [];
 
 // send player to the server
 socket.emit('get_player', player);
@@ -96,17 +129,32 @@ socket.emit('get_player', player);
 // main loop
 function animate() {
     requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.125)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
     socket.emit('get_player', player);
     for(enemy in players){
-        pl = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].player_health);
+        pl = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].health);
         pl.update();
-        // enemy proj
+        // enemy hits
         if(enemy_projectiles.length > 0){
             enemy_projectiles.forEach(p =>{
                 const dist = Math.hypot(pl.x - p.x, pl.y - p.y);
                 if(dist - p.radius - pl.radius < 1){
+                    // particles spawn
+                    for(let i = 0; i < 8; i++){
+                        particles.push(
+                            new Particle(
+                                p.x, 
+                                p.y, 
+                                3, 
+                                pl.colour, 
+                                {
+                                    x: Math.random() - 0.5,
+                                    y: Math.random() - 0.5,
+                                })
+                        );
+                    }
                     setTimeout(() => {
                         const index = enemy_projectiles.indexOf(p);
                         enemy_projectiles.splice(index, 1);
@@ -117,6 +165,20 @@ function animate() {
         projectiles.forEach(projectile =>{
             const dist = Math.hypot(pl.x - projectile.x, pl.y - projectile.y);
                 if(dist - projectile.radius - pl.radius < 1){
+                     // particles spawn
+                     for(let i = 0; i < 8; i++){
+                        particles.push(
+                            new Particle(
+                                projectile.x, 
+                                projectile.y, 
+                                3, 
+                                pl.colour, 
+                                {
+                                    x: Math.random() - 0.5,
+                                    y: Math.random() - 0.5,
+                                })
+                        );
+                    }
                     setTimeout(() => {
                         const index = projectiles.indexOf(projectile);
                         projectiles.splice(index, 1);
@@ -126,44 +188,94 @@ function animate() {
     }
     player.update();
     //camera_auto_scroll(player.dir); //?
+    // enemy projectiles managment
     if(enemy_projectiles.length > 0){
         enemy_projectiles.forEach(p =>{
             p.update();
+            // delete projectile of dist
             if(p.dist >= p.max_dist){
                 setTimeout(() => {
                     const index = enemy_projectiles.indexOf(p);
                     enemy_projectiles.splice(index, 1);
                 }, 0)
             }
+            // hits on players from enemies
             const dist = Math.hypot(player.x - p.x, player.y - p.y);
             if(dist - p.radius - player.radius < 1){
+                // particles spawn
+                for(let i = 0; i < 8; i++){
+                    particles.push(
+                        new Particle(
+                            p.x, 
+                            p.y, 
+                            3, 
+                            player.colour, 
+                            {
+                                x: Math.random() - 0.5,
+                                y: Math.random() - 0.5,
+                            })
+                    );
+                }
                 setTimeout(() => {
                     const index = enemy_projectiles.indexOf(p);
                     enemy_projectiles.splice(index, 1);
                 }, 0)
+                // player health management
                 player.health = player.health - 1;
-                console.log(player.health);
+                const decrease = player.radius / (player.health+3);
+                if(player.radius - decrease > 0){
+                    player.radius = player.radius - decrease;
+                }
             }
         });
     }
+    // players projectiles managment
     projectiles.forEach(projectile =>{
         projectile.update();
+        // delete projectile of dist
         if(projectile.dist >= projectile.max_dist){
             setTimeout(() => {
                 const index = projectiles.indexOf(projectile);
                 projectiles.splice(index, 1);
             }, 0)
         }
+        // hits from player to itself
         const dist = Math.hypot(player.x - projectile.x, player.y - projectile.y);
             if(dist - projectile.radius - player.radius < 1){
+                // particles spawn
+                for(let i = 0; i < 8; i++){
+                    particles.push(
+                        new Particle(
+                            projectile.x, 
+                            projectile.y, 
+                            3, 
+                            player.colour, 
+                            {
+                                x: Math.random() - 0.5,
+                                y: Math.random() - 0.5,
+                            })
+                    );
+                }
                 setTimeout(() => {
                     const index = projectiles.indexOf(projectile);
                     projectiles.splice(index, 1);
                 }, 0)
+                // player health management
                 player.health = player.health - 1;
-                console.log(player.health);
+                const decrease = player.radius / (player.health+3);
+                if(player.radius - decrease > 0){
+                    player.radius = player.radius - decrease;
+                }
             }
     });
+    particles.forEach((particle, index) => {
+        if(particle.alpha <= 0){
+            particles.splice(index, 1);
+        }else{
+            particle.update()
+        }
+    });
+    // player death
     if(player.health <= 0){
         console.log('Died!');
         socket.disconnect();
@@ -225,7 +337,10 @@ canvas.addEventListener('click', (event) => {
             player.y + velocity.y*(player.radius+2) + velocity.y*proj_s,
             proj_r, 
             proj_colour, 
-            velocity,
+            {
+                x: velocity.x*proj_speed, 
+                y: velocity.y*proj_speed
+            },
             max_dist,
         );
         socket.emit('get_projectiles', p);

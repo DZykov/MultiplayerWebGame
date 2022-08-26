@@ -80,16 +80,6 @@ io.on('connection', (socket) => {
         
     });
 
-    // send collision
-    socket.on('send_collision', (projectile) => {
-        delete projectiles[socket.id];
-        //socket.emit('delete_projectiles', projectile);
-
-        for(var key in players){
-            io.to(key).emit('delete_projectiles', projectile);
-        }
-    });
-
     // disconnect
     socket.on('disconnect', (player) => {
         delete players[socket.id];
