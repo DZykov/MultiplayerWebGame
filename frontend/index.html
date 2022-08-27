@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
+            background: black;
         }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -18,13 +20,13 @@
         <link rel="shortcut icon" href="#">
     </head>
     <body>
-        <div class="fixed">
-            <div class="bg-white">
-                <p>Room id</p>
-                <input type="number" id="room_id" name="room_id">
+        <div class="fixed inset-0 flex items-center justify-center" id="menuModel">
+            <div class="bg-white max-w-md w-full p-6 text-center">
+                <p class="text-2xl font-bold">Room id</p>
+                <input class="text-2xl text-center" type="number" id="room_id">
                 
-                <p>Player colour</p>
-                <select name="input_p_colour" id="input_p_colour">
+                <p class="text-2xl font-bold">Player colour</p>
+                <select class="text-1xl font-bold" name="input_p_colour" id="input_p_colour">
                     <option value="blue">Blue</option>
                     <option value="red">Red</option>
                     <option value="green">Green</option>
@@ -32,22 +34,23 @@
                     <option value="purple">Purple</option>
                 </select>
                 
-                <p>Buller colour</p>
-                <select name="input_b_colour" id="input_b_colour">
+                <p class="text-2xl font-bold">Bullet colour</p>
+                <select class="text-1xl font-bold mb-4" id="input_b_colour">
                     <option value="blue">Blue</option>
                     <option value="red">Red</option>
                     <option value="green">Green</option>
                     <option value="white">White</option>
                     <option value="purple">Purple</option>
                 </select>
-                <br></br>
                 <div>
-                    <button>Start game</button>
+                    <button class="bg-blue-500 text-white w-full py-3 rounded-full text-2xl" id="startGameBtn">
+                        Start game
+                    </button>
                 </div>
             </div>
-        </div>>
+        </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script>
-        <canvas></canvas>
+        <canvas tabindex='1'></canvas>
         <script src="./index.js"></script>
     </body>
 </html>

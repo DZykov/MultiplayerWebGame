@@ -92,16 +92,20 @@ class Particle {
     }
 }
 
-// consts
+// consts sockets
 const socket = io('http://localhost:3000');
 socket.emit('get_envy', ); // ?
 var envy = {}; // ?
 
+// consts html
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
+const startGameBtn = document.querySelector('#startGameBtn');
+const menuModel = document.querySelector('#menuModel');
 
-const worldWidth = 800;  // get from server
-const worldHeight = 800;  // get from server
+// consts game // change for let
+const worldWidth = 2000;  // get from server
+const worldHeight = 2000;  // get from server
 const border_margin = 10;  // get from server
 canvas.width = worldWidth;
 canvas.height = worldHeight;
@@ -115,13 +119,17 @@ const player = new Player(x_mid, y_mid, player_r, player_colour, player_s, playe
 const max_bullets = 15; // get from server
 const max_dist = 600; // get from server
 const proj_r = 5; // get from server
-const proj_s = 5; // get from server
+const proj_s = 6; // get from server
 const proj_speed = 3; // get from server
 const proj_colour = 'red';
 const projectiles = [];
 var players = [];
 const enemy_projectiles = [];
 const particles = [];
+
+function init(){
+
+}
 
 // send player to the server
 socket.emit('get_player', player);
@@ -278,7 +286,7 @@ function animate() {
         console.log('Died!');
         cancelAnimationFrame(animationId);
         socket.disconnect();
-        return;
+        menuModel.style.display = 'flex';
     }
 }
 
@@ -347,7 +355,7 @@ canvas.addEventListener('click', (event) => {
 })
 
 // 2. movements
-window.addEventListener('keydown', (event) => {
+canvas.addEventListener('keydown', (event) => {
     if(event.key.toLowerCase() == 'a'){
         player.dir = 'a';
     }
@@ -370,20 +378,20 @@ let isDown = false;
 let startX;
 let startY;
 let scrollLeft;
-window.addEventListener("mousedown", e => {
+canvas.addEventListener("mousedown", e => {
     if(e.button == 1){
         isDown = true;
         startX = player.x;
         startY = player.y;
     }
 });
-window.addEventListener("mouseleave", () => {
+canvas.addEventListener("mouseleave", () => {
     isDown = false;
 });
-window.addEventListener("mouseup", () => {
+canvas.addEventListener("mouseup", () => {
     isDown = false;
 });
-window.addEventListener("mousemove", e => {
+canvas.addEventListener("mousemove", e => {
     if (!isDown) return;
     e.preventDefault();
     const walkX = -e.clientX + startX;
@@ -423,6 +431,11 @@ function receive_envy(data){
     envy = data;
 }
 
-// start game
-scroll_to_center()
-animate();
+// html input
+startGameBtn.addEventListener('click', () => {
+    menuModel.style.display = 'none';
+    // start game
+    init();
+    scroll_to_center();
+    animate();
+});
