@@ -56,6 +56,9 @@ io.on('connection', (socket) => {
     socket.on('get_player', (player) => {
         players[socket.id] = player;
         socket.emit('receive_players', uniq_players(socket.id));
+        if(player.health <= 1){
+            delete players[socket.id];
+        }
         for(var key in players){
             if(socket.id != key){
                 io.to(key).emit('receive_players', uniq_players(key));

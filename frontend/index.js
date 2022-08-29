@@ -93,46 +93,68 @@ class Particle {
 }
 
 // consts sockets
-const socket = io('http://localhost:3000');
-socket.emit('get_envy', ); // ?
-var envy = {}; // ?
+let socket = io('http://localhost:3000');
 
 // consts html
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const startGameBtn = document.querySelector('#startGameBtn');
 const menuModel = document.querySelector('#menuModel');
+const p_input_colour = document.querySelector('#input_p_colour');
+const b_input_colour = document.querySelector('#input_b_colour');
 
 // consts game // change for let
-const worldWidth = 2000;  // get from server
-const worldHeight = 2000;  // get from server
-const border_margin = 10;  // get from server
-canvas.width = worldWidth;
-canvas.height = worldHeight;
-const player_r = 30;  // get from server
-const player_s = 3;  // get from server
-const player_health = 10;  // get from server
-const x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 - border_margin + 1) + player_r*3);
-const y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 - border_margin + 1) + player_r*3);
-const player_colour = 'blue'; // input
-const player = new Player(x_mid, y_mid, player_r, player_colour, player_s, player_health);
-const max_bullets = 15; // get from server
-const max_dist = 600; // get from server
-const proj_r = 5; // get from server
-const proj_s = 6; // get from server
-const proj_speed = 3; // get from server
-const proj_colour = 'red';
-const projectiles = [];
-var players = [];
-const enemy_projectiles = [];
-const particles = [];
+let worldWidth;
+let worldHeight;
+let border_margin;
+let player_r;
+let player_s;
+let player_health;
+let x_mid;
+let y_mid;
+let player_colour;
+let player;
+let max_bullets;
+let max_dist;
+let proj_r;
+let proj_s;
+let proj_speed;
+let proj_colour;
+let projectiles;
+let players;
+let enemy_projectiles;
+let particles;
 
 function init(){
+    socket.emit('get_envy', ); // ?
+    var envy = {}; // ?
+    
 
+    worldWidth = 2000;  // get from server
+    worldHeight = 2000;  // get from server
+    border_margin = 10;  // get from server
+    canvas.width = worldWidth;
+    canvas.height = worldHeight;
+    player_r = 30;  // get from server
+    player_s = 3;  // get from server
+    player_health = 10;  // get from server
+    x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 - border_margin + 1) + player_r*3);
+    y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 - border_margin + 1) + player_r*3);
+    player_colour = p_input_colour.value;
+    player = new Player(x_mid, y_mid, player_r, player_colour, player_s, player_health);
+    max_bullets = 15; // get from server
+    max_dist = 600; // get from server
+    proj_r = 5; // get from server
+    proj_s = 6; // get from server
+    proj_speed = 3; // get from server
+    proj_colour = b_input_colour.value;
+    projectiles = [];
+    players = [];
+    enemy_projectiles = [];
+    particles = [];
+    // send player to the server
+    socket.emit('get_player', player);
 }
-
-// send player to the server
-socket.emit('get_player', player);
 
 // main loop
 let animationId;
@@ -285,7 +307,7 @@ function animate() {
     if(player.health <= 0){
         console.log('Died!');
         cancelAnimationFrame(animationId);
-        socket.disconnect();
+        //socket.disconnect();
         menuModel.style.display = 'flex';
     }
 }
