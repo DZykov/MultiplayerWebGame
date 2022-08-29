@@ -94,6 +94,8 @@ class Particle {
 
 // consts sockets
 let socket = io('http://localhost:3000');
+socket.emit('get_envy', );
+var envy = {};
 
 // consts html
 const canvas = document.querySelector('canvas');
@@ -102,8 +104,10 @@ const startGameBtn = document.querySelector('#startGameBtn');
 const menuModel = document.querySelector('#menuModel');
 const p_input_colour = document.querySelector('#input_p_colour');
 const b_input_colour = document.querySelector('#input_b_colour');
+const room_id = document.querySelector('#room_id');
 
-// consts game // change for let
+// game variables
+let room_id_value;
 let worldWidth;
 let worldHeight;
 let border_margin;
@@ -126,27 +130,23 @@ let enemy_projectiles;
 let particles;
 
 function init(){
-    socket.emit('get_envy', ); // ?
-    var envy = {}; // ?
-    
-
-    worldWidth = 2000;  // get from server
-    worldHeight = 2000;  // get from server
-    border_margin = 10;  // get from server
+    worldWidth = envy.worldWidth;
+    worldHeight = envy.worldHeight;
+    border_margin = envy.border_margin;
     canvas.width = worldWidth;
     canvas.height = worldHeight;
-    player_r = 30;  // get from server
-    player_s = 3;  // get from server
-    player_health = 10;  // get from server
+    player_r = envy.player_r;
+    player_s = envy.player_s;
+    player_health = envy.player_health;
     x_mid = Math.floor(Math.random() * (canvas.width - player_r*3 - border_margin + 1) + player_r*3);
     y_mid = Math.floor(Math.random() * (canvas.height - player_r*3 - border_margin + 1) + player_r*3);
     player_colour = p_input_colour.value;
     player = new Player(x_mid, y_mid, player_r, player_colour, player_s, player_health);
-    max_bullets = 15; // get from server
-    max_dist = 600; // get from server
-    proj_r = 5; // get from server
-    proj_s = 6; // get from server
-    proj_speed = 3; // get from server
+    max_bullets = envy.max_bullets;
+    max_dist = envy.max_dist;
+    proj_r = envy.proj_r;
+    proj_s = envy.proj_s;
+    proj_speed = envy.proj_speed;
     proj_colour = b_input_colour.value;
     projectiles = [];
     players = [];
@@ -455,6 +455,8 @@ function receive_envy(data){
 
 // html input
 startGameBtn.addEventListener('click', () => {
+    room_id_value =  room_id.value;
+    console.log(room_id_value)
     menuModel.style.display = 'none';
     // start game
     init();
