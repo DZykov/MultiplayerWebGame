@@ -456,7 +456,7 @@ function receive_envy(data){
 // html input
 startGameBtn.addEventListener('click', () => {
     room_id_value =  room_id.value;
-    console.log(room_id_value)
+    socket.emit('new_game', room_id_value);
     menuModel.style.display = 'none';
     // start game
     init();
