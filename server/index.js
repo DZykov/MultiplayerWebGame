@@ -46,18 +46,14 @@ class Room{
 // constants
 const express = require('express');
 const app = express();
-const http = require('https');
+const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
 // init server
 app.use(cors());
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "https://stirring-buttercream-cf7454.netlify.app/",
-    }
-});
+const io = require('socket.io').listen(server);
 
 // consts for environment
 const envy = {
