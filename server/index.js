@@ -55,12 +55,12 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "https://stirring-buttercream-cf7454.netlify.app",
+        origins: ["*"],
 
         handlePreflightrequest:(req, res) => {
             res.writeHead(200, {
-                "Access-Control-Allow-Origin": "https://stirring-buttercream-cf7454.netlify.app",
-                //"Access-Control-Allow-Methods": "GET, POST, POLLING",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, POLLING",
             });
             res.end();
         }
