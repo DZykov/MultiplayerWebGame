@@ -55,8 +55,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "https://tranquil-everglades-91995.herokuapp.com/",
-        "Access-Control-Allow-Origin": "https://tranquil-everglades-91995.herokuapp.com/"
+        origin: "https://stirring-buttercream-cf7454.netlify.app/",
+        "Access-Control-Allow-Origin": "https://stirring-buttercream-cf7454.netlify.app/"
     }
 });
 
