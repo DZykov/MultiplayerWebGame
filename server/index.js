@@ -56,7 +56,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     chandlePreflightRequest: (req, res) => {
         const headers = {
-            "Access-Control-Allow-Origin": "https://stirring-buttercream-cf7454.netlify.app/"
+            "Access-Control-Allow-Origin": "*"
         };
         res.writeHead(200, headers);
         res.end();
