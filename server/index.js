@@ -60,7 +60,7 @@ const io = new Server(server, {
         handlePreflightrequest:(req, res) => {
             res.writeHead(200, {
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, POLLING",
+                "Access-Control-Allow-Methods": ["GET", "POST", "POLLING"]
             });
             res.end();
         }
