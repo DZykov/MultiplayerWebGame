@@ -97,6 +97,9 @@ io.on('connection', (socket) => {
 
     // send players
     socket.on('get_player', (player, room_id) => {
+        if (typeof client_rooms[room_id] == 'undefined'){
+            return;
+        }
         // add player to room and inform
         client_rooms[room_id].add_player(socket.id, player);
         socket.emit('receive_players', client_rooms[room_id].get_players_except(socket.id));
@@ -117,6 +120,9 @@ io.on('connection', (socket) => {
  
     // send projectiles
     socket.on('get_projectiles', (projectile, room_id) => {
+        if (typeof client_rooms[room_id] == 'undefined'){
+            return;
+        }
         // add projectile to room and inform
         client_rooms[room_id].add_projectile(socket.id, projectile);
         socket.emit('receive_projectiles', client_rooms[room_id].get_players_except(socket.id));
@@ -130,9 +136,9 @@ io.on('connection', (socket) => {
 
     // delete projectiles
     socket.on('delete_projectiles', (room_id) => {
-        //console.log(room_id)
-        //console.log(1)
-        // delete projectile and send info
+        if (typeof client_rooms[room_id] == 'undefined'){
+            return;
+        }
         client_rooms[room_id].delete_projectile(socket.id);
         
     }); 
@@ -140,19 +146,19 @@ io.on('connection', (socket) => {
     // disconnect
     socket.on('disconnect', () => {
         room_id = ids_to_rooms[socket.id];
-        client_rooms[room_id].delete_player(socket.id);
-        delete ids_to_rooms[socket.id];
-        // send new info to anyone except themselves
-        for(var key in client_rooms[room_id].players){
-            if(socket.id != key){
-                io.to(key).emit('receive_players', client_rooms[room_id].get_players_except(key));
+        if (typeof client_rooms[room_id] != 'undefined'){
+            client_rooms[room_id].delete_player(socket.id);
+            // send new info to anyone except themselves
+            for(var key in client_rooms[room_id].players){
+                if(socket.id != key){
+                    io.to(key).emit('receive_players', client_rooms[room_id].get_players_except(key));
+                }
+            }
+            if(Object.keys(client_rooms[room_id].players).length <= 0){
+                delete client_rooms[room_id];
             }
         }
-
-        if(Object.keys(client_rooms[room_id].players).length <= 0){
-            delete client_rooms[room_id];
-        }
-        // console.log(client_rooms);
+        delete ids_to_rooms[socket.id];
     });
 });
 

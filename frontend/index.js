@@ -268,7 +268,6 @@ function animate() {
     projectiles.forEach(projectile =>{
         projectile.update();
         // delete projectile of dist
-        //console.log(projectile)
         if(projectile.dist >= projectile.max_dist){
             socket.emit('delete_projectiles', room_id_value);
             setTimeout(() => {
@@ -315,7 +314,6 @@ function animate() {
         socket.emit('get_player', player, room_id_value);
         console.log('Died!');
         cancelAnimationFrame(animationId);
-        //socket.disconnect();
         menuModel.style.display = 'flex';
     }
 }
@@ -453,7 +451,6 @@ function receive_projectiles(data){
         return;
     }
     p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);
-    //console.log(data[1])
     enemy_projectiles.push(p);
 }
 
