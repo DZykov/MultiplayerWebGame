@@ -48,7 +48,7 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const cors = require('cors');
-const { Server } = require('socket.io')(server, {cors: {origin: "*"}});;
+const { Server } = require('socket.io');
 
 // init server
 app.use(cors());
@@ -56,6 +56,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "https://stirring-buttercream-cf7454.netlify.app/",
+        "Access-Control-Allow-Origin": "https://stirring-buttercream-cf7454.netlify.app/"
     }
 });
 
