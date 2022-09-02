@@ -46,7 +46,7 @@ class Room{
 // constants
 const express = require('express');
 const app = express();
-const http = require('http');
+const http = require('https');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
@@ -54,12 +54,8 @@ const { Server } = require('socket.io');
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
-    chandlePreflightRequest: (req, res) => {
-        const headers = {
-            "Access-Control-Allow-Origin": "*"
-        };
-        res.writeHead(200, headers);
-        res.end();
+    cors: {
+        origin: "https://stirring-buttercream-cf7454.netlify.app/",
     }
 });
 
