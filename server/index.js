@@ -50,10 +50,21 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
-// init server
-app.use(cors());
-const server = http.createServer(app);
-const io = require('socket.io').listen(server);
+var cors = require("cors");
+const corsOptions = {
+  origin: "*",
+  optionsSuccessStatus: 200
+};
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    methods: ["PUT", "GET", "POST", "DELETE", "OPTIONS"],
+    credentials: false
+  }
+  // transports: ['websocket']
+});
+
+app.use(cors(corsOptions));
 
 // consts for environment
 const envy = {
