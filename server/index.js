@@ -56,7 +56,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origins: ["*"],
-
+        methods: ["GET", "POST", "POLLING"],
+      allowedHeaders: ["content-type"],
         handlePreflightrequest:(req, res) => {
             res.writeHead(200, {
                 "Access-Control-Allow-Origin": "*",
