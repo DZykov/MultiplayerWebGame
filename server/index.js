@@ -1,3 +1,48 @@
+class Room{
+    constructor(id){
+        this.id = id;
+        this.players = {};
+        this.projectiles = {};
+    }
+
+    delete_player(id){
+        delete this.players[id];
+    }
+
+    add_player(id, player){
+        this.players[id] = player;
+    }
+
+    delete_projectile(id){
+        delete this.projectiles[id];
+    }
+
+    add_projectile(id, projectile){
+        this.projectiles[id] = projectile;
+    }
+
+    get_players_except(id){
+        var lst = [];
+        for(let key in this.players){
+            if(key != id){
+                lst.push(this.players[key]);
+            }
+        }
+        var lst_p = this.get_projectiles_except(id);
+        return [lst, lst_p];
+    }
+
+    get_projectiles_except(id){
+        let lst;
+        for(let key in this.projectiles){
+            if(key != id){
+                lst = this.projectiles[key];
+            }
+        }
+        return lst;
+    }
+}
+
 // constants
 const express = require('express');
 const app = express();
@@ -26,13 +71,12 @@ const envy = {
     max_dist: 600,
     proj_r: 5,
     proj_s: 5,
-    proj_speed: 3
+    proj_speed: 4
 } 
 
 // consts for managing players and projectiles
-var players = {};
-var projectiles = {};
-const client_rooms = {};
+var client_rooms = {};
+var ids_to_rooms = {};
 
 
 // server functions
@@ -41,7 +85,9 @@ io.on('connection', (socket) => {
     socket.emit('init', {data: 'Connected!'}); // change!
 
     socket.on('new_game', (room_id) => {
-        console.log(room_id)
+        room = new Room(room_id);
+        client_rooms[room_id] = room;
+        ids_to_rooms[socket.id] = room_id;
     });
 
     // get envy
@@ -50,67 +96,66 @@ io.on('connection', (socket) => {
     });
 
     // send players
-    socket.on('get_player', (player) => {
-        players[socket.id] = player;
-        socket.emit('receive_players', uniq_players(socket.id));
-        if(player.health <= 1){
-            delete players[socket.id];
+    socket.on('get_player', (player, room_id) => {
+        // add player to room and inform
+        client_rooms[room_id].add_player(socket.id, player);
+        socket.emit('receive_players', client_rooms[room_id].get_players_except(socket.id));
+        socket.emit('receive_projectiles', client_rooms[room_id].get_players_except(socket.id));
+        // check for deletion
+        if(player.health <= 0){
+            client_rooms[room_id].delete_player(socket.id);
         }
-        for(var key in players){
+        // send new info to anyone except themselves
+        for(var key in client_rooms[room_id].players){
             if(socket.id != key){
-                io.to(key).emit('receive_players', uniq_players(key));
+                io.to(key).emit('receive_players', client_rooms[room_id].get_players_except(key));
+                io.to(key).emit('receive_projectiles', client_rooms[room_id].get_players_except(key));
             }
         }
+        client_rooms[room_id].delete_projectile(socket.id)
     });
-
+ 
     // send projectiles
-    socket.on('get_projectiles', (projectile) => {
-        projectiles[socket.id] = projectile;
-        socket.emit('receive_projectiles', uniq_players(socket.id));
-
-        for(var key in players){
+    socket.on('get_projectiles', (projectile, room_id) => {
+        // add projectile to room and inform
+        client_rooms[room_id].add_projectile(socket.id, projectile);
+        socket.emit('receive_projectiles', client_rooms[room_id].get_players_except(socket.id));
+        // send new info to everyone except themselves
+        for(var key in client_rooms[room_id].projectiles){
             if(socket.id != key){
-                io.to(key).emit('receive_projectiles', uniq_players(key));
+                io.to(key).emit('receive_projectiles', client_rooms[room_id].get_players_except(key));
             }
         }
-        
     });
 
     // delete projectiles
-    socket.on('get_projectiles', () => {
-        delete projectiles[socket.id];
-        socket.emit('receive_projectiles', uniq_players(socket.id));
-
-        for(var key in players){
-            if(socket.id != key){
-                io.to(key).emit('receive_projectiles', uniq_players(key));
-            }
-        }
+    socket.on('delete_projectiles', (room_id) => {
+        //console.log(room_id)
+        //console.log(1)
+        // delete projectile and send info
+        client_rooms[room_id].delete_projectile(socket.id);
         
-    });
+    }); 
 
     // disconnect
-    socket.on('disconnect', (player) => {
-        delete players[socket.id];
-        for(var key in players){
-            io.to(key).emit('receive_players', uniq_players(key));
+    socket.on('disconnect', () => {
+        room_id = ids_to_rooms[socket.id];
+        client_rooms[room_id].delete_player(socket.id);
+        delete ids_to_rooms[socket.id];
+        // send new info to anyone except themselves
+        for(var key in client_rooms[room_id].players){
+            if(socket.id != key){
+                io.to(key).emit('receive_players', client_rooms[room_id].get_players_except(key));
+            }
         }
+
+        if(Object.keys(client_rooms[room_id].players).length <= 0){
+            delete client_rooms[room_id];
+        }
+        // console.log(client_rooms);
     });
 });
 
 server.listen(3000, () => {
     console.log('Server is running!');
 });
-
-// helpers
-function uniq_players(id){
-    var n_players = {}
-    var n_projectiles = []
-    for(player in players){
-        if(player != id){
-            n_players[player] = players[player];
-            n_projectiles = projectiles[player];
-        }
-    }
-    return [n_players, n_projectiles];
-}

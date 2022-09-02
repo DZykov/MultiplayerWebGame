@@ -153,7 +153,7 @@ function init(){
     enemy_projectiles = [];
     particles = [];
     // send player to the server
-    socket.emit('get_player', player);
+    socket.emit('get_player', player, room_id_value);
 }
 
 // main loop
@@ -163,7 +163,7 @@ function animate() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.125)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     var check = check_boarder();
-    socket.emit('get_player', player);
+    socket.emit('get_player', player, room_id_value);
     for(enemy in players){
         pl = new Player(players[enemy].x, players[enemy].y, players[enemy].radius, players[enemy].colour, players[enemy].speed, players[enemy].health);
         pl.update();
@@ -186,6 +186,7 @@ function animate() {
                                 })
                         );
                     }
+                    //socket.emit('delete_projectiles', room_id_value);
                     setTimeout(() => {
                         const index = enemy_projectiles.indexOf(p);
                         enemy_projectiles.splice(index, 1);
@@ -210,6 +211,7 @@ function animate() {
                                 })
                         );
                     }
+                    //socket.emit('delete_projectiles', room_id_value);
                     setTimeout(() => {
                         const index = projectiles.indexOf(projectile);
                         projectiles.splice(index, 1);
@@ -225,6 +227,7 @@ function animate() {
             p.update();
             // delete projectile of dist
             if(p.dist >= p.max_dist){
+                //socket.emit('delete_projectiles', room_id_value);
                 setTimeout(() => {
                     const index = enemy_projectiles.indexOf(p);
                     enemy_projectiles.splice(index, 1);
@@ -247,6 +250,7 @@ function animate() {
                             })
                     );
                 }
+                //socket.emit('delete_projectiles', room_id_value);
                 setTimeout(() => {
                     const index = enemy_projectiles.indexOf(p);
                     enemy_projectiles.splice(index, 1);
@@ -264,7 +268,9 @@ function animate() {
     projectiles.forEach(projectile =>{
         projectile.update();
         // delete projectile of dist
+        //console.log(projectile)
         if(projectile.dist >= projectile.max_dist){
+            socket.emit('delete_projectiles', room_id_value);
             setTimeout(() => {
                 const index = projectiles.indexOf(projectile);
                 projectiles.splice(index, 1);
@@ -287,6 +293,7 @@ function animate() {
                             })
                     );
                 }
+                socket.emit('delete_projectiles', room_id_value);
                 setTimeout(() => {
                     const index = projectiles.indexOf(projectile);
                     projectiles.splice(index, 1);
@@ -305,6 +312,7 @@ function animate() {
     });
     // player death
     if(player.health <= 0){
+        socket.emit('get_player', player, room_id_value);
         console.log('Died!');
         cancelAnimationFrame(animationId);
         //socket.disconnect();
@@ -371,7 +379,7 @@ canvas.addEventListener('click', (event) => {
             },
             max_dist,
         );
-        socket.emit('get_projectiles', p);
+        socket.emit('get_projectiles', p, room_id_value);
         projectiles.push(p);
     }
 })
@@ -445,6 +453,7 @@ function receive_projectiles(data){
         return;
     }
     p = new Projectile(data[1].x, data[1].y, data[1].radius, data[1].colour, data[1].velocity, data[1].max_dist);
+    //console.log(data[1])
     enemy_projectiles.push(p);
 }
 
