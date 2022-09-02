@@ -48,23 +48,16 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const cors = require('cors');
-const { Server } = require('socket.io');
+const { Server } = require('socket.io')(server, {cors: {origin: "*"}});;
 
-var cors = require("cors");
-const corsOptions = {
-  origin: "*",
-  optionsSuccessStatus: 200
-};
-const io = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-    methods: ["PUT", "GET", "POST", "DELETE", "OPTIONS"],
-    credentials: false
-  }
-  // transports: ['websocket']
+// init server
+app.use(cors());
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "https://tranquil-everglades-91995.herokuapp.com/",
+    }
 });
-
-app.use(cors(corsOptions));
 
 // consts for environment
 const envy = {
