@@ -1,5 +1,6 @@
 # Multiplayer web shooter
-    This is a simple multiplayer game to play in a web browser. Multiplayer Web game is written in js. The only library used for backend is websocket.io. Frontend uses tailwind css; however, all gameplay happens in canvas. You may check this game online: webshooterio.netlify.app
+
+This is a simple multiplayer game to play in a web browser. Multiplayer Web game is written in js. The only library used for backend is websocket.io. Frontend uses tailwind css; however, all gameplay happens in canvas. You may check this game online: webshooterio.netlify.app
 
 ## Index
    - [Demo](#Demo "Goto Demo")
