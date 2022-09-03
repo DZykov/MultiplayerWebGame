@@ -7,6 +7,7 @@ This is a simple multiplayer game to play in a web browser. Multiplayer Web game
    - [Game-play](#Game-play "Goto Game-play")
    - [Game Features](#Game-Features "Goto Game-Features")
    - [Controls](#Controls "Goto Controls")
+   - [Structure](#Structure "Goto Structure")
    - [To-Do](#To-Do "Goto To-Do")
    - [Issues](#Issues "Goto Issues")
 
@@ -25,6 +26,7 @@ At the start of a session, user may choose to what room to connect; moreover, th
 - Intuitive hp bar
 - Multiplayer
 - Possibility to choose/create server room
+- Camera control
 
 ## Controls
 | Action       | Button                            |
@@ -37,9 +39,22 @@ At the start of a session, user may choose to what room to connect; moreover, th
 | Move camera  | <kbd>middle mouse click</kbd>     |
 |              |                                   |
 
+## Structure
+
+#### Client:
+Client-side connects to the server, receives initial information about the environment, sends initial information about the player, and gets all available information about other players and projectiles. It is important to notice that, the server doesn't perform any calculations. All calculations are done on the client side.
+
+The client-side (frontend) is run on netlify. Frontend creates polling request to the server and receives/sends all necessary data.
+
+#### Server:
+Server accepts only request from webshooterio.netlify.app. Since server doesn't perfom any calculations, it sorts data by rooms, then determines what information/data has to be send for each client.
+
+The server is run on heroku. Server only accepts GET, POST, POLLING reqeusts from netlify.
+
 ## To-Do
-- As for know, there are no to-dos
+- Refractor client side
 
 ## Issues
 - Time delay on unstable connection
 - The whole game renders and runs on client side
+- Rooms don't have limit on the number of players
