@@ -47,9 +47,9 @@ Client-side connects to the server, receives initial information about the envir
 The client-side (frontend) is run on netlify. Frontend creates polling request to the server and receives/sends all necessary data.
 
 #### Server:
-Server accepts only request from webshooterio.netlify.app. Since server doesn't perfom any calculations, it sorts data by rooms, then determines what information/data has to be send for each client.
+The server accepts only request from webshooterio.netlify.app. Since the server doesn't perform any calculations, it sorts data by room's ids, and then determines what information/data has to be sent for each client.
 
-The server is run on heroku. Server only accepts GET, POST, POLLING reqeusts from netlify.
+The server is run on Heroku. The server only accepts GET, POST, and POLLING requests from netlify.
 
 ## To-Do
 - Refractor client side
