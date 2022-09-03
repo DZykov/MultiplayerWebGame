@@ -15,6 +15,8 @@ https://user-images.githubusercontent.com/38252337/188250265-c2e61790-30ff-40f5-
 
 ## Gameplay
 
+![alt text](https://github.com/DZykov/MultiplayerWebGame/blob/master/img/start_screen.png)
+
 At the start of a session, user may choose to what room to connect; moreover, the user may choose the colour for the character, and its bullets. After, that the user is taken to the battlefiend to other players.
 
 ## Game Features
