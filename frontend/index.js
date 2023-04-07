@@ -93,7 +93,7 @@ class Particle {
 }
 
 // consts sockets
-let socket = io('https://tranquil-everglades-91995.herokuapp.com/', {transports:['polling']});
+let socket = io('https://shooter-io.herokuapp.com/', {transports:['polling']});
 socket.emit('get_envy', );
 var envy = {};
 
